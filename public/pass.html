@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mahalakshmi Travel Pass</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    .card-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    .card {
+      width: 500px;
+      height: 300px;
+      background: #cde9f9;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .heading-logo { width: 40px; height: 40px; }
+    .heading-text h2 { font-size: 16px; margin: 0; font-weight: bold; }
+    .heading-text .pass-title { font-size: 13px; margin: 0; font-weight: bold; }
+    .photo-info {
+      display: flex; gap: 15px; margin-top: 70px; align-items: flex-start;
+    }
+    .photo {
+      width: 2.6cm; height: 2.6cm; background: #000;
+      border-radius: 6px; object-fit: cover;
+    }
+    .details { flex: 1; font-size: 14px; line-height: 1.2; }
+    .details p { margin: 3px 0; }
+    .details-row { display: flex; justify-content: space-between; }
+    .signature-box {
+      position: absolute; bottom: 50px; right: 160px;
+      width: 120px; height: 40px; border-bottom: 1px solid #000;
+      text-align: center; font-size: 11px;
+    }
+    .qr {
+      position: absolute; bottom: 50px; right: 40px;
+      width: 80px; height: 80px; background: #fff; border: 2px solid #000;
+    }
+    .valid-till {
+      position: absolute; bottom: 20px; right: 40px;
+      font-size: 12px; font-weight: bold;
+    }
+    .watermark {
+      position: absolute; top: 50%; left: 50%;
+      width: 280px; height: 280px;
+      background: url('logo.png') no-repeat center;
+      background-size: contain; opacity: 0.12;
+      transform: translate(-50%, -50%); pointer-events: none;
+    }
+    .front-watermark { background: url('back_logo.png') no-repeat center; background-size: contain; }
+    .logo2 {
+      position: absolute; bottom: 15px; right: 20px; width: 70px; z-index: 1;
+    }
+    .logo2 img { width: 100%; height: auto; object-fit: contain; }
+    .info {
+      position: absolute; bottom: 30px; left: 20px; font-size: 13px;
+    }
+    .text-center { text-align: center; font-size: 13px; }
+    .footer { position: absolute; bottom: 10px; left: 20px; font-size: 12px; font-weight: bold; }
+    .actions { margin-top: 20px; text-align: center; }
+    .btn {
+      background: #007bff; color: #fff; border: none;
+      padding: 14px 28px; font-size: 16px; border-radius: 8px;
+      margin: 10px; cursor: pointer;
+    }
+    .btn:hover { background: #0056b3; }
+    .note { font-size: 12px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="card-container">
+    <!-- BACK SIDE -->
+    <div class="card" id="backCard">
+      <div class="header">
+        <img src="logo.png" alt="Logo" class="heading-logo" />
+        <div class="heading-text">
+          <h2>GOVERNMENT OF TELANGANA</h2>
+          <h3 class="pass-title">Mahalakshmi Free Bus Travel Pass</h3>
+        </div>
+      </div>
+      <div class="photo-info">
+        <img id="photo" class="photo" crossOrigin="anonymous" alt="Applicant Photo" />
+        <div class="details">
+          <div class="details-row">
+            <p><b>Name:</b> <span id="name">XXXX</span></p>
+            <p><b>Pass ID:</b> <span id="passId">TSRTC-XXXXXXXX</span></p>
+          </div>
+          <p><b>Aadhaar ID:</b> <span id="aadhar">XXXX</span></p>
+          <p><b>Phone:</b> <span id="phone">XXXX</span></p>
+          <p><b>DOB:</b> <span id="dob">XXXX</span></p>
+          <p><b>Zone:</b> <span id="district">XXXX</span></p>
+        </div>
+      </div>
+      <div class="signature-box"><p>Managing Director</p></div>
+      <canvas id="qr" class="qr"></canvas>
+      <div class="valid-till">Valid Till: 31-Dec-2028</div>
+      <div class="watermark"></div>
+    </div>
+
+    <!-- FRONT SIDE -->
+    <div class="card" id="frontCard">
+      <p class="text-center">
+        <b>
+          This pass is valid only for women passengers under the Mahalakshmi Free Travel Scheme.<br />
+          Non-transferable. Misuse will lead to cancellation.
+        </b>
+      </p>
+      <div class="info">
+        <p>
+          24x7 Toll-Free Helpline: 1800-9999-000<br />
+          Women Safety Helpline (She Teams): 100 / 1091<br />
+          TSRTC Customer Care: +91-40-00000000
+        </p>
+      </div>
+   
+      <div class="footer">Safe Travel, Free Travel – Telangana Govt. Mahalakshmi Scheme</div>
+      <div class="watermark front-watermark"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="printBtn" class="btn">Print Pass</button>
+    <div class="note">(You can print the card for verification.)</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    async function loadApplicant() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
+      if (!id) return alert("❌ No applicant ID provided in URL");
+
+      const res = await fetch(`http://localhost:5000/applicant/${id}`);
+      const data = await res.json();
+      if (!data.success) return alert("❌ Applicant not found");
+
+      const a = data.applicant;
+      document.getElementById("name").textContent = a.name;
+      document.getElementById("aadhar").textContent = a.aadhar;
+      document.getElementById("phone").textContent = a.whatsapp || a.phone;
+      document.getElementById("dob").textContent = a.dob;
+      document.getElementById("district").textContent = a.district;
+      document.getElementById("passId").textContent = a.passId;
+
+      if (a.photo) {
+        const photoPath = a.photo.startsWith("/") ? a.photo.slice(1) : a.photo;
+        document.getElementById("photo").src = `http://localhost:5000/${photoPath}`;
+      }
+
+      QRCode.toCanvas(document.getElementById("qr"), a.passId, { width: 80 }, err => {
+        if (err) console.error(err);
+      });
+    }
+
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    loadApplicant();
+  </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TSRTC Free Pass Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      text-align: center;
+      background: #cfe2ff;
+      padding: 15px 0;
+      border-bottom: 3px solid #003366;
+    }
+    .header img {
+      height: 80px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: bold;
+      color: #000;
+    }
+    .header h3 {
+      margin: 5px 0 0;
+      font-size: 18px;
+      font-weight: bold;
+      color: #000;
+    }
+    .form-box {
+      margin: 40px auto;
+      width: 480px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      padding: 25px;
+    }
+    .form-box label {
+      display: inline-block;
+      width: 150px;
+      font-weight: bold;
+      color: #000;
+      font-size: 14px;
+    }
+    .form-box input {
+      padding: 6px;
+      width: 220px;
+      border: 1px solid #999;
+      font-size: 14px;
+    }
+    .bottom-center {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .captcha-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 15px 0;
+    }
+    #captchaCanvas {
+      background: #800000;
+      border: 1px solid #333;
+    }
+    .refresh-btn {
+      cursor: pointer;
+      font-size: 18px;
+      margin-left: 10px;
+      border: 1px solid #666;
+      background: #f2f2f2;
+      padding: 4px 6px;
+    }
+    .refresh-btn:hover {
+      background: #e6e6e6;
+    }
+    .submit-btn {
+      margin-top: 10px;
+      padding: 6px 20px;
+      font-size: 15px;
+      border: 1px solid #333;
+      background: #f2f2f2;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #dcdcdc;
+    }
+    .msg {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <img src="logo.png" alt="TSRTC Logo">
+    <h2>TELANGANA STATE ROAD TRANSPORT CORPORATION</h2>
+    <h3>FREE WOMEN BUS PASS VERIFICATION</h3>
+  </div>
+
+  <!-- Form -->
+  <div class="form-box">
+    <label>Phone Number *</label>
+    <input type="text" id="phone" placeholder="Enter 10-digit phone"><br>
+
+    <div class="bottom-center">
+      <div class="captcha-box">
+        <canvas id="captchaCanvas" width="120" height="40"></canvas>
+        <button type="button" class="refresh-btn" onclick="generateCaptcha()">🔄</button>
+      </div>
+      <input type="text" id="captchaInput" placeholder="Enter captcha"><br>
+      <input type="button" class="submit-btn" value="Check" onclick="verifyForm()">
+    </div>
+
+    <p id="msg" class="msg"></p>
+  </div>
+
+  <script>
+    let captchaCode = "";
+
+    function generateCaptcha() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      captchaCode = "";
+      for (let i = 0; i < 5; i++) {
+        captchaCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const canvas = document.getElementById("captchaCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#800000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "bold 22px Arial";
+      ctx.fillStyle = "white";
+      for (let i = 0; i < captchaCode.length; i++) {
+        const x = 15 + i * 18;
+        const y = 25 + Math.random() * 6;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((Math.random() - 0.5) * 0.3);
+        ctx.fillText(captchaCode[i], 0, 0);
+        ctx.restore();
+      }
+    }
+
+    async function verifyForm() {
+      const phone = document.getElementById("phone").value.trim();
+      const captchaInput = document.getElementById("captchaInput").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!/^\d{10}$/.test(phone)) {
+        msg.textContent = "❌ Please enter a valid 10-digit phone number.";
+        return;
+      }
+      if (captchaInput.toUpperCase() !== captchaCode) {
+        msg.textContent = "❌ Incorrect captcha. Try again.";
+        generateCaptcha();
+        return;
+      }
+
+      try {
+        // ✅ Call backend to verify phone
+        const res = await fetch(`http://localhost:5000/verify/${phone}`);
+        const data = await res.json();
+
+        if (data.success) {
+          msg.style.color = "green";
+          msg.textContent = "✅ Verified! Redirecting...";
+          setTimeout(() => {
+            // Redirect to pass page with applicant id
+            window.location.href = `pass.html?id=${data.id}`;
+          }, 1500);
+        } else {
+          msg.style.color = "red";
+          msg.textContent = "❌ Phone number not registered.";
+        }
+      } catch (err) {
+        console.error(err);
+        msg.style.color = "red";
+        msg.textContent = "⚠️ Server error. Try again later.";
+      }
+    }
+
+    window.onload = generateCaptcha;
+  </script>
+</body>
+</html>

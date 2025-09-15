@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MahaLakshmi Card Info</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url("bus.png") center/cover no-repeat fixed;
+      color: white;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 0;
+    }
+    .logo { position: fixed; top: 20px; left: 20px; z-index: 2; }
+    .logo img { height: 70px; width: auto; }
+    .content { position: relative; z-index: 1; padding: 80px 10% 50px 10%; min-height: 100vh; text-align: center; }
+    .page-title { font-size: 2.5rem; font-weight: bold; margin-bottom: 20px; margin-top: 40px; }
+    .description { font-size: 1.2rem; margin-bottom: 30px; }
+    .guidelines-box { margin: 30px auto; width: 90%; max-width: 800px; background: rgba(30,30,30,0.9); color: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.5); font-size: 1rem; line-height: 1.6; text-align: left; }
+    .guidelines-box h2 { font-size: 1.3rem; margin-bottom: 10px; color: #ffcc00; text-align: center; }
+    .button-container { margin-top: 30px; display: flex; justify-content: center; gap: 20px; }
+    .action-btn { padding: 12px 24px; font-size: 1rem; background: #ffcc00; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; min-width: 180px; }
+    .action-btn:hover { background: #ffaa00; transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+    .sub-sections { width: 90%; max-width: 800px; margin: 40px auto 0 auto; display: flex; flex-direction: column; gap: 20px; align-items: stretch; }
+    .card { background: rgba(30,30,30,0.9); color: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 5px 14px rgba(0,0,0,0.45); text-align: left; line-height: 1.6; }
+    .card h3 { margin: 0 0 8px 0; font-size: 1.15rem; color: #ffcc00; }
+    .help a { color: #ffcc00; text-decoration: none; font-weight: 600; }
+    .help a:hover { text-decoration: underline; }
+    .faq-item { border-bottom: 1px solid #555; padding: 10px 0; cursor: pointer; }
+    .faq-question { font-weight: 600; color: #ffcc00; margin: 0; }
+    .faq-answer { display: none; margin-top: 6px; color: #ddd; }
+    .faq-item.active .faq-answer { display: block; }
+    footer { width: 100%; margin-top: 28px; padding: 20px 0; color: #e6e6e6; font-size: 0.95rem; text-align: center; }
+    @media (max-width: 800px) {
+      .guidelines-box, .sub-sections { width: 90%; }
+      .button-container { flex-direction: column; gap: 15px; }
+      .action-btn { width: 100%; min-width: unset; }
+    }
+    #logo11{
+      border-radius: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="logo1.png" alt="TS Govt Logo" id="logo11"/>
+  </div>
+
+  <div class="content">
+    <h1 class="page-title">MahaLakshmi Smart QR Card Scheme</h1>
+    <p class="description">
+      A new initiative to eliminate paper tickets, reduce government costs, and promote eco-friendly travel for women.
+    </p>
+
+    <div class="guidelines-box">
+      <h2>Guidelines & Rules</h2>
+      <p>1. Card is strictly for women beneficiaries only...</p>
+      <p>2. The card is valid only in authorized buses...</p>
+      <p>3. QR code must always be scanned before journey...</p>
+    </div>
+
+    <div class="button-container">
+      <button class="action-btn" onclick="window.location.href='verify.html'">
+        Download Bus Pass
+      </button>
+      <button class="action-btn" onclick="window.location.href='apply.html'">
+        Start My Application
+      </button>
+    </div>
+
+    <div class="sub-sections">
+      <div class="card help">
+        <h3>Need Help?</h3>
+        <p>If you face issues while filling the form, email 
+          <a href="mailto:support@ts.gov.in">support@ts.gov.in</a> 
+          or call: <strong>1800-123-456</strong></p>
+      </div>
+
+      <div class="card notes">
+        <h3>Important Notes</h3>
+        <ul>
+          <li>Keep a valid ID proof ready before starting the application.</li>
+          <li>Ensure the mobile number used is active for OTP.</li>
+          <li>Applications once submitted may take time to process.</li>
+        </ul>
+      </div>
+
+      <div class="card faq">
+        <h3>Frequently Asked Questions</h3>
+        <div class="faq-item"><p class="faq-question">1. Who is eligible?</p><p class="faq-answer">Women residents of Telangana...</p></div>
+        <div class="faq-item"><p class="faq-question">2. Where can I use this card?</p><p class="faq-answer">Valid on TSRTC buses.</p></div>
+        <div class="faq-item"><p class="faq-question">3. How do I apply?</p><p class="faq-answer">Click "Start My Application".</p></div>
+      </div>
+    </div>
+
+    <footer>
+      © 2025 Telangana State Government | Maintained by Transport Department
+    </footer>
+  </div>
+
+  <script>
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.classList.toggle('active');
+      });
+    });
+  </script>
+</body>
+</html>

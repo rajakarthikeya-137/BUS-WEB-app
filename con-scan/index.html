@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Ticketing</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <style>
+    body { margin:0; background:#f9fafb; font-family:Arial; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; color:#111827; }
+    .phase { display:none; flex-direction:column; gap:12px; background:#fff; padding:16px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.15); width:320px; max-width:90%; }
+    .phase.active { display:flex; }
+    h3 { text-align:center; margin-bottom:8px; color:#1e293b; }
+    select,input,button { padding:10px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px; width:100%; background:#f8fafc; color:#111827; }
+    button { background:#2563eb; color:#fff; border:none; font-weight:bold; cursor:pointer; transition:all .3s; }
+    button:hover { background:#1d4ed8; }
+    #amount { width:120px; font-size:14px; }
+    .scanner-box { position:relative; width:100%; height:400px; background:#000; border-radius:12px; overflow:hidden; }
+    .scanner-box video { width:100%; height:100%; object-fit:cover; }
+    .cutout { position:absolute; top:25%; left:15%; width:70%; height:40%; border:2px solid #2563eb; box-shadow:0 0 15px rgba(37,99,235,0.8); animation:glow 2s infinite alternate; }
+    @keyframes glow { from{box-shadow:0 0 10px rgba(37,99,235,.6)} to{box-shadow:0 0 25px rgba(37,99,235,.9)} }
+    .scan-line { position:absolute; left:15%; width:70%; height:3px; background:rgba(37,99,235,.95); animation:scan 2.5s linear infinite; }
+    @keyframes scan { 0%{top:25%} 100%{top:65%} }
+    #scanStatus { text-align:center; font-size:14px; margin-top:8px; color:#2563eb; font-weight:bold; }
+
+    /* --- Ticket Preview Styling --- */
+    .ticket-box {
+      background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+      border: 2px solid #2563eb;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      color: #1e293b;
+      font-size: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); /* ✅ Black shadow */
+    }
+    .ticket-box::before,
+    .ticket-box::after {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: #f9fafb;
+      border: 2px solid #2563eb;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .ticket-box::before { left: -14px; }
+    .ticket-box::after { right: -14px; }
+    .ticket-box p { margin: 6px 0; font-size: 15px; font-weight: 500; }
+    .ticket-box b { color: #111827; font-size: 16px; }
+
+    /* Confirm button glow */
+    #phase3 button {
+      margin-top: 12px;
+      background:#2563eb;
+      box-shadow: 0 0 12px rgba(37,99,235,0.6);
+    }
+    #phase3 button:hover {
+      background:#1d4ed8;
+      box-shadow: 0 0 18px rgba(37,99,235,0.9);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Phase 1 -->
+<div id="phase1" class="phase active">
+  <h3>🎫 Book Ticket</h3>
+  <select id="source">
+    <option value="">Select Source</option>
+    <option>Gandimysamma X Road</option>
+    <option>Bowrampet</option>
+    <option>Pragathi Nagar</option>
+    <option>Miyapur X Road</option>
+  </select>
+  <select id="destination">
+    <option value="">Select Destination</option>
+    <option>Gandimysamma X Road</option>
+    <option>Bowrampet</option>
+    <option>Pragathi Nagar</option>
+    <option>Miyapur X Road</option>
+  </select>
+  <select id="paymentType">
+    <option value="">Select Payment</option>
+    <option value="FREE">Free</option>
+    <option value="PAID">Paid</option>
+  </select>
+  <input type="number" id="amount" placeholder="Enter Amount" style="display:none;">
+  <button onclick="goToPhase2()">Continue</button>
+</div>
+
+<!-- Phase 2 -->
+<div id="phase2" class="phase">
+  <h3>📷 Scan Your Pass QR</h3>
+  <div class="scanner-box">
+    <video id="video" autoplay muted playsinline></video>
+    <div class="cutout"></div>
+    <div class="scan-line"></div>
+  </div>
+  <div id="scanStatus">⚠️ Waiting for QR...</div>
+  <canvas id="preview" style="display:none;"></canvas>
+  <button onclick="stopCamera(); backToPhase1()">Back</button>
+</div>
+
+<!-- Phase 3 -->
+<div id="phase3" class="phase">
+  <h3>🎟️ Ticket Preview</h3>
+  <div class="ticket-box" id="ticketBox"></div>
+  <button onclick="confirmTicket()">Confirm & Book</button>
+</div>
+
+<script>
+const video=document.getElementById('video');
+const preview=document.getElementById('preview');
+const scanStatus=document.getElementById('scanStatus');
+let stream=null,scanInterval=null;
+let journeyData={},applicantData=null;
+
+function goToPhase2(){
+  const s=document.getElementById('source').value;
+  const d=document.getElementById('destination').value;
+  const p=document.getElementById('paymentType').value;
+  const amt=document.getElementById('amount');
+  if(!s||!d||!p){alert("Fill all fields");return;}
+  if(p==="PAID"&&!amt.value){alert("Enter amount");return;}
+  journeyData={source:s,destination:d,paymentType:p,amount:p==="PAID"?Number(amt.value):0};
+  showPhase(2); startCamera();
+}
+function backToPhase1(){ showPhase(1); }
+function showPhase(n){ document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active')); document.getElementById('phase'+n).classList.add('active'); }
+
+async function startCamera(){
+  if(stream) return;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    video.srcObject=stream; startAutoScan();
+  }catch(err){alert("Camera not accessible");console.error(err);}
+}
+function stopCamera(){ if(scanInterval)clearInterval(scanInterval); if(stream){stream.getTracks().forEach(t=>t.stop());} video.srcObject=null; stream=null; }
+function startAutoScan(){
+  const ctx=preview.getContext('2d');
+  scanInterval=setInterval(()=>{
+    if(video.readyState===video.HAVE_ENOUGH_DATA){
+      preview.width=video.videoWidth; preview.height=video.videoHeight;
+      ctx.drawImage(video,0,0,preview.width,preview.height);
+      const imgData=ctx.getImageData(0,0,preview.width,preview.height);
+      const code=jsQR(imgData.data,preview.width,preview.height);
+      if(code){ stopCamera(); fetchApplicant(code.data); }
+    }
+  },300);
+}
+
+async function fetchApplicant(passId){
+  try{
+    const res=await fetch(`http://localhost:5000/getApplicant/${passId}`);
+    if(!res.ok) throw new Error("Not found");
+    applicantData=await res.json();
+    loadTicketPreview(); showPhase(3);
+  }catch(err){
+    scanStatus.textContent="❌ Invalid QR";
+    scanStatus.style.color="#dc2626";
+    console.error(err);
+  }
+}
+
+function loadTicketPreview(){
+  const box=document.getElementById('ticketBox');
+  box.innerHTML=`
+    <p><b>${applicantData.name}</b> (${applicantData.gender})</p>
+    <p>From: ${journeyData.source}</p>
+    <p>To: ${journeyData.destination}</p>
+    <p>Payment: ${journeyData.paymentType} ${journeyData.amount?"₹"+journeyData.amount:""}</p>
+  `;
+}
+
+async function confirmTicket(){
+  try{
+    const res=await fetch("http://localhost:5000/bookTicket",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({applicantId:applicantData._id,...journeyData})
+    });
+    const data=await res.json();
+    if(data.success){ alert("🎉 Ticket booked successfully!"); location.reload(); }
+    else{ alert("Booking failed"); }
+  }catch(err){ console.error(err); alert("Error booking ticket"); }
+}
+
+document.getElementById('paymentType').addEventListener('change',e=>{
+  document.getElementById('amount').style.display=e.target.value==="PAID"?"block":"none";
+});
+</script>
+</body>
+</html>

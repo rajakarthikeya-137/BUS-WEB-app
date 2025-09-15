@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mahalakshmi Free Bus Scheme Application</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #ffffff; }
+    .age-aadhar-row { column-gap: 150px; }
+    .container {
+      width: 900px; margin: 20px auto; border: 1px solid #ccc;
+      background: #fff; box-shadow: 0px 0px 10px #ccc;
+      border-radius: 8px; padding-bottom: 20px;
+    }
+    .header { text-align: center; background-color: #cfe2ff; padding: 15px; border-radius: 8px 8px 0 0; }
+    .header img { width: 60px; height: 60px; }
+    .header h2 { margin: 5px 0; font-size: 20px; font-weight: bold; }
+    .header h3 { margin: 0; font-size: 18px; font-weight: bold; }
+    fieldset { border: 1px solid #888; margin: 15px; padding: 15px; background: #fff; }
+    legend { font-weight: bold; background: #3e8ce0; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 14px; }
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); column-gap:80px; row-gap: 30px; margin-bottom: 15px; }
+    .form-group { width: 100%; }
+    label { display: block; margin-bottom: 4px; font-size: 14px; }
+    label span { color: red; }
+    input[type=text], input[type=email], input[type=date], input[type=file], select {
+      width: 100%; padding: 6px; border: 1px solid #888; border-radius: 5px; font-size: 14px;
+    }
+    input[type=radio] { margin-right: 5px; }
+    .captcha {
+      margin: 15px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .captcha-box {
+      background: #cc0000; color: #fff; font-weight: bold;
+      padding: 6px 12px; border-radius: 4px;
+      font-size: 16px; letter-spacing: 2px;
+    }
+    .captcha input { width: 200px; padding: 6px; border: 1px solid #888; border-radius: 3px; font-size: 14px; text-align: center; }
+    .refresh-btn { background: none; border: none; cursor: pointer; font-size: 20px; margin-left: 10px; }
+    .submit-btn {
+      display: block; margin: 15px auto; padding: 10px 22px;
+      background: #ff0066; color: #fff; border: none;
+      cursor: pointer; font-size: 15px; border-radius: 4px;
+    }
+    .submit-btn:hover { background: #e6005c; }
+    .char-limit { color: red; font-size: 12px; }
+    .age-fields { display: flex; gap: 6px; }
+    .age-fields input { width: 60px; padding: 4px; }
+  </style>
+</head>
+<body>
+  <form id="applicationForm" class="container" enctype="multipart/form-data">
+    <div class="header">
+      <img src="https://upload.wikimedia.org/wikipedia/en/7/77/Telangana_State_Road_Transport_Corporation_logo.png" alt="TSRTC Logo"><br>
+      <h2>TELANGANA STATE ROAD TRANSPORT CORPORATION</h2>
+      <h3>MAHALAKSHMI FREE BUS SCHEME APPLICATION</h3>
+    </div>
+
+    <!-- Applicant Details -->
+    <fieldset>
+      <legend>Applicant Details</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Name <span>*</span></label>
+          <input type="text" name="name" maxlength="20" required>
+          <small class="char-limit">(Maximum characters: 20)</small>
+        </div>
+        <div class="form-group">
+          <label>Father's / Guardian's Name <span>*</span></label>
+          <input type="text" name="fatherName" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date of Birth <span>*</span></label>
+          <input type="date" id="dob" name="dob" required onchange="calculateAge()">
+        </div>
+        <div class="form-group">
+          <label>Gender <span>*</span></label>
+          <input type="radio" name="gender" value="female" checked required> Female
+        </div>
+      </div>
+      <div class="form-row age-aadhar-row">
+        <div class="form-group">
+          <label>Age As On</label>
+          <div class="age-fields">
+            <input type="text" id="ageYears" name="ageYears" placeholder="Years" readonly>
+            <input type="text" id="ageMonths" name="ageMonths" placeholder="Months" readonly>
+            <input type="text" id="ageDays" name="ageDays" placeholder="Days" readonly>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Aadhar No:</label>
+          <input type="text" name="aadhar">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone No <span>*</span></label>
+          <input type="text" name="whatsapp" required>
+        </div>
+        <div class="form-group">
+          <label>Email Id <span>*</span></label>
+          <input type="email" name="email" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Photo <span>*</span></label>
+          <input type="file" name="photo" required>
+        </div>
+        <div class="form-group">
+          <label>Aadhar Card <span>*</span></label>
+          <input type="file" name="aadharFile" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Residential Address -->
+    <fieldset>
+      <legend>Residential Address Details</legend>
+      <div class="form-row">
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Applicant’s Address <span>*</span></label>
+          <input type="text" name="address" maxlength="200" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>District <span>*</span></label>
+          <select id="districtSelect" name="district" required>
+            <option value="">-----Select-----</option>
+            <option>Adilabad</option>
+            <option>Bhadradri Kothagudem</option>
+            <option>Hyderabad</option>
+            <option>Warangal</option>
+            <option>Karimnagar</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mandal <span>*</span></label>
+          <input type="text" name="mandal" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Village <span>*</span></label>
+          <input type="text" name="village" required>
+        </div>
+        <div class="form-group">
+          <label>Pincode <span>*</span></label>
+          <input type="text" name="pincode" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Pass Type -->
+    <fieldset>
+      <legend>Pass Type Details</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City <span>*</span></label>
+          <input type="text" name="city" required>
+        </div>
+        <div class="form-group">
+          <label>Pass Type <span>*</span></label>
+          <select name="passType" required>
+            <option value="">-----Select-----</option>
+            <option>MAHALAKSHMI FREE SCHEME</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Mode of Payment -->
+    <fieldset>
+      <legend>Mode of Payment & Pass Collection</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Payment Mode <span>*</span></label>
+          <input type="text" value="FREE SCHEME" readonly>
+        </div>
+        <div class="form-group">
+          <label>Pass Delivery Mode <span>*</span></label>
+          <input type="text" value="Bus Pass Counter" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Center at which you want to Collect Pass <span>*</span></label>
+          <select id="counterOptions" name="counter" required>
+            <option value="">-----Select-----</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Captcha -->
+    <div class="captcha">
+      <div id="captchaCode" class="captcha-box">ABC123</div>
+      <button class="refresh-btn" type="button" onclick="generateCaptcha()">🔄</button>
+      <input type="text" id="captchaInput" placeholder="Enter Captcha" required>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" type="submit">Submit</button>
+  </form>
+
+  <script>
+    // Captcha generator
+    function generateCaptcha() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+      let captcha = "";
+      for (let i = 0; i < 6; i++) captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+      document.getElementById("captchaCode").innerText = captcha;
+    }
+
+    // Age calculator
+    function calculateAge() {
+      let dob = document.getElementById("dob").value;
+      if (!dob) return;
+      let dobDate = new Date(dob);
+      let today = new Date();
+      let years = today.getFullYear() - dobDate.getFullYear();
+      let months = today.getMonth() - dobDate.getMonth();
+      let days = today.getDate() - dobDate.getDate();
+      if (days < 0) { months--; days += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+      if (months < 0) { years--; months += 12; }
+      document.getElementById("ageYears").value = years;
+      document.getElementById("ageMonths").value = months;
+      document.getElementById("ageDays").value = days;
+    }
+
+    // District counters
+    const districtCounters = {
+      Hyderabad: ["RTC Hyderabad", "MGBS Counter"],
+      Warangal: ["RTC Warangal"],
+      Karimnagar: ["RTC Karimnagar"],
+      Adilabad: ["RTC Adilabad"],
+      "Bhadradri Kothagudem": ["RTC Bhadradri Kothagudem"]
+    };
+    document.getElementById("districtSelect").addEventListener("change", function() {
+      let district = this.value;
+      let counterSelect = document.getElementById("counterOptions");
+      counterSelect.innerHTML = '<option value="">--- Select Counter ---</option>';
+      if (district && districtCounters[district]) {
+        districtCounters[district].forEach(c => {
+          let opt = document.createElement("option");
+          opt.textContent = c;
+          opt.value = c;
+          counterSelect.appendChild(opt);
+        });
+      }
+    });
+
+    // Form submission with fetch
+    document.getElementById("applicationForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      // Captcha check
+      const entered = document.getElementById("captchaInput").value.trim();
+      const actual = document.getElementById("captchaCode").innerText.trim();
+      if (entered !== actual) {
+        alert("❌ Captcha does not match!");
+        generateCaptcha();
+        return;
+      }
+
+      const formData = new FormData(this);
+      try {
+        const response = await fetch("http://localhost:5000/apply", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert("✅ Application submitted!");
+          this.reset();
+          generateCaptcha();
+        } else {
+          alert("❌ Failed: " + result.error);
+        }
+      } catch (err) {
+        alert("❌ Error submitting form: " + err.message);
+      }
+    });
+
+    // Init captcha
+    generateCaptcha();
+  </script>
+</body>
+</html>
